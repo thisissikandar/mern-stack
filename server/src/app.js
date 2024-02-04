@@ -3,7 +3,6 @@ import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
 
-
 const app = express()
 
 app.use(cors({
@@ -22,6 +21,9 @@ app.get('/', (req, res)=>{
 
 // Import routes
 import router from './routes/user.routes.js';
+import aboutRouter from "./routes/about.routes.js"
+
 app.use("/api/v1/auth", router);
+app.use("/api/v1", aboutRouter);
 
 export {app}
