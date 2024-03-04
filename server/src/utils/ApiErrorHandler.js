@@ -1,16 +1,22 @@
+
+/**
+ * @description Common Error class to throw an error from anywhere.
+ * The {@link errorHandler} middleware will catch this error at the central place and it will return an appropriate response to the client
+ */
+
 class ApiErrorHandler extends Error {
   constructor(
     statusCode,
     message = "Something Went wrong",
     errors = [],
-    stack = null
+    stack = ''
   ) {
     super(message);
-    (this.statusCode = statusCode),
-      (this.data = null),
-      (this.message = message),
-      (this.success = false),
-      (this.errors = errors);
+    this.statusCode = statusCode;
+    this.data = null;
+    this.message = message;
+    this.success = false;
+    this.errors = errors;
 
     if (stack) {
       this.stack = stack;

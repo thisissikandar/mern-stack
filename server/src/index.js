@@ -1,22 +1,41 @@
-import dotenv from "dotenv"
-import connectDb from "./db/index.js"
-import { app } from "./app.js"
-
+import dotenv from "dotenv";
+import connectDb from "./db/index.js";
+import { httpServer } from "./app.js";
 
 dotenv.config({
-    path: "./env"
-})
+  path: "./env",
+});
 
-connectDb()
-.then(()=>{
-    app.on("error",(err)=>{
-        console.log("Error", err);
-        throw err
+/**
+ * Starting from Node.js v14 top-level await is available and it is only available in ES modules.
+ * This means you can not use it with common js modules or Node version < 14.
+ */
+const majorNodeVersion = +process.env.NODE_VERSION?.split(".")[0] || 0;
+
+const startServer = () => {
+  httpServer.listen(process.env.APP_PORT || 8080, () => {
+    // console.info(
+    //   `📑 Visit the documentation at: http://localhost:${
+    //     process.env.PORT || 8080
+    //   }`
+    // );
+    console.log("⚙️  Server is running on port: " + process.env.APP_PORT);
+  });
+};
+
+if (majorNodeVersion >= 14) {
+  try {
+    await connectDb();
+    startServer();
+  } catch (err) {
+    console.log("Mongo db connect error: ", err);
+  }
+} else {
+  connectDb()
+    .then(() => {
+      startServer();
     })
-    app.listen(process.env.APP_PORT || 3000, () =>{
-       console.log(`App Running on http://localhost:${process.env.APP_PORT}`);
-    })
-})
-.catch((err)=>{
-    console.log("MongoDb Connection Failed :", err);
-})
+    .catch((err) => {
+      console.log("Mongo db connect error: ", err);
+    });
+}
