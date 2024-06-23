@@ -1,10 +1,18 @@
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
+
+
 import { User } from "../../models/auth/user.model.js";
 import { ApiErrorHandler } from "../../utils/ApiErrorHandler.js";
 import { UserLoginType, UserRolesEnum } from "../../constants.js";
-import { emailVerificationMailgenContent, forgotPasswordMailgenContent, sendEmail } from "../../utils/mail.js";
+import {
+  emailVerificationMailgenContent,
+  forgotPasswordMailgenContent,
+  sendEmail,
+} from "../../utils/mail.js";
 import { ApiResponseHandler } from "../../utils/ApiResponseHandler.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
+import { getLocalPath, getStaticFilePath, removeLocalFile } from "../../utils/helper.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -12,7 +20,7 @@ const generateAccessAndRefreshToken = async (userId) => {
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
-    // attach refresh token to the user document to avoid refreshing the access token with multiple refresh tokens
+    // attach refresh token to the user document to avoid refreshing the  access token with multiple refresh tokens
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: true });
     return { accessToken, refreshToken };
@@ -80,18 +88,21 @@ const userRegister = asyncHandler(async (req, res) => {
     "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
   );
   if (!createdUser) {
-    throw new ApiErrorHandler(500, "Something went wrong while registering the user");
+    throw new ApiErrorHandler(
+      500,
+      "Something went wrong while registering the user"
+    );
   }
 
   return res
-  .status(201)
-  .json(
-    new ApiResponseHandler(
-      200,
-      { user: createdUser },
-      "Users registered successfully and verification email has been sent on your email."
-    )
-  );
+    .status(201)
+    .json(
+      new ApiResponseHandler(
+        200,
+        { user: createdUser },
+        "Users registered successfully and verification email has been sent on your email."
+      )
+    );
 });
 
 const userLogin = asyncHandler(async (req, res) => {
@@ -104,7 +115,6 @@ const userLogin = asyncHandler(async (req, res) => {
   const user = await User.findOne({
     $or: [{ username }, { email }],
   });
-
 
   if (!user) {
     throw new ApiErrorHandler("404", "User Not exist");
@@ -122,7 +132,7 @@ const userLogin = asyncHandler(async (req, res) => {
         " login option to access your account."
     );
   }
-  const isPasswordValid = user.isPasswordCorrect(password);
+  const isPasswordValid = await user.isPasswordCorrect(password);
 
   if (!isPasswordValid) {
     throw new ApiErrorHandler(401, "Invalid User Credentials");
@@ -137,8 +147,8 @@ const userLogin = asyncHandler(async (req, res) => {
     "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
   );
 
-   // TODO: Add more options to make cookie more secure and reliable
-   const options = {
+  // TODO: Add more options to make cookie more secure and reliable
+  const options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
   };
@@ -195,7 +205,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
     const decodedToken = jwt.verify(
       incommingRefreshToken,
-      process.env.REFRESH_TOCKEN_SECRET
+      process.env.REFRESH_TOKEN_SECRET
     );
     console.log("user: ", decodedToken);
     const user = await User.findById(decodedToken?._id);
@@ -212,7 +222,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     const options = {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
     };
     const { accessToken, newRefreshToken } =
       await generateAccessAndRefreshToken(user?._id);
@@ -280,7 +290,6 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     );
 });
 
-
 const verifyEmail = asyncHandler(async (req, res) => {
   const { verificationToken } = req.params;
 
@@ -317,7 +326,13 @@ const verifyEmail = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponseHandler(200, { isEmailVerified: true }, "Email is verified"));
+    .json(
+      new ApiResponseHandler(
+        200,
+        { isEmailVerified: true },
+        "Email is verified"
+      )
+    );
 });
 
 // This controller is called when user is logged in and he has snackbar that your email is not verified
@@ -354,7 +369,9 @@ const resendEmailVerification = asyncHandler(async (req, res) => {
   });
   return res
     .status(200)
-    .json(new ApiResponseHandler(200, {}, "Mail has been sent to your mail ID"));
+    .json(
+      new ApiResponseHandler(200, {}, "Mail has been sent to your mail ID")
+    );
 });
 
 const forgotPasswordRequest = asyncHandler(async (req, res) => {
@@ -400,14 +417,108 @@ const forgotPasswordRequest = asyncHandler(async (req, res) => {
       )
     );
 });
+
+
+const updateUserAvatar = asyncHandler(async (req, res) => {
+  // Check if user has uploaded an avatar
+  if (!req.file?.filename) {
+    throw new ApiErrorHandler(400, "Avatar image is required");
+  }
+
+  // get avatar file system url and local path
+  const avatarUrl = getStaticFilePath(req, req.file?.filename);
+  const avatarLocalPath = getLocalPath(req.file?.filename);
+
+  const user = await User.findById(req.user._id);
+
+  let updatedUser = await User.findByIdAndUpdate(
+    req.user._id,
+
+    {
+      $set: {
+        // set the newly uploaded avatar
+        avatar: {
+          url: avatarUrl,
+          localPath: avatarLocalPath,
+        },
+      },
+    },
+    { new: true }
+  ).select(
+    "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
+  );
+
+  // remove the old avatar
+  removeLocalFile(user.avatar.localPath);
+
+  return res
+    .status(200)
+    .json(new ApiResponseHandler(200, updatedUser, "Avatar updated successfully"));
+});
+const assignRole = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { role } = req.body;
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new ApiErrorHandler(404, "User does not exist");
+  }
+  user.role = role;
+  await user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponseHandler(200, {}, "Role changed for the user"));
+});
+
+const resetForgottenPassword = asyncHandler(async (req, res) => {
+  const { resetToken } = req.params;
+  const { newPassword } = req.body;
+
+  // Create a hash of the incoming reset token
+
+  let hashedToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // See if user with hash similar to resetToken exists
+  // If yes then check if token expiry is greater than current date
+
+  const user = await User.findOne({
+    forgotPasswordToken: hashedToken,
+    forgotPasswordExpiry: { $gt: Date.now() },
+  });
+
+  // If either of the one is false that means the token is invalid or expired
+  if (!user) {
+    throw new ApiErrorHandler(489, "Token is invalid or expired");
+  }
+
+  // if everything is ok and token id valid
+  // reset the forgot password token and expiry
+  user.forgotPasswordToken = undefined;
+  user.forgotPasswordExpiry = undefined;
+
+  // Set the provided password as the new password
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+  return res
+    .status(200)
+    .json(new ApiResponseHandler(200, {}, "Password reset successfully"));
+});
 export {
-  userRegister,
+  assignRole,
+  changeCurrentPassword,
+  forgotPasswordRequest,
+  getCurrentUser,
   userLogin,
   logOutUser,
   refreshAccessToken,
-  changeCurrentPassword,
-  getCurrentUser,
-  verifyEmail,
+  userRegister,
   resendEmailVerification,
-  forgotPasswordRequest,
+  resetForgottenPassword,
+  updateUserAvatar,
+  verifyEmail,
+  updateAccountDetails,
 };

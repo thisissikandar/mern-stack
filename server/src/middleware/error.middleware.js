@@ -1,20 +1,12 @@
 import mongoose from "mongoose";
 import { ApiErrorHandler } from "../utils/ApiErrorHandler.js";
-import winstonLogger from "../logger/winston.logger.js";
-
-/**
- * @description This middleware is responsible to catch the errors
- * from any request handler wrapped inside the {@link asyncHandler}
- *
- */
+import logger from "../logger/winston.logger.js";
+import { removeUnusedMulterImageFilesOnError } from "../utils/helper.js";
 
 const errorHandler = (err, req, res, next) => {
   let error = err;
-  /**
-   * Check if the error is an instance of an ApiError class which extends
-   *  native Error class
-   *
-   */
+
+  // Check if the error is an instance of an ApiError class which extends native Error class
   if (!(error instanceof ApiErrorHandler)) {
     // if not
     // create a new ApiError instance to keep the consistency
@@ -32,17 +24,15 @@ const errorHandler = (err, req, res, next) => {
       err.stack
     );
   }
-  /**
-   * Now we are sure that the `error` variable will be an instance
-   * of ApiError class
-   */
+
+  // Now we are sure that the `error` variable will be an instance of ApiError class
   const response = {
     ...error,
     message: error.message,
     ...(process.env.NODE_ENV === "development" ? { stack: error.stack } : {}), // Error stack traces should be visible in development for debugging
   };
 
-  winstonLogger.error(`${error.message}`);
+  logger.error(`${error.message}`);
 
   removeUnusedMulterImageFilesOnError(req);
   // Send error response

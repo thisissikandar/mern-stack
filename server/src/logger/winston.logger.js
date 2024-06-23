@@ -60,15 +60,16 @@ const format = winston.format.combine(
 const transports = [
   // Allow the use the console to print the messages
   new winston.transports.Console(),
+  new winston.transports.File({filename:'app.log'})
 ];
 
 // Create the logger instance that has to be exported
 // and used to log messages.
-const winstonLogger = winston.createLogger({
+const logger = winston.createLogger({
   level: level(),
   levels,
   format,
   transports,
 });
 
-export default winstonLogger;
+export default logger;

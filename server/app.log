@@ -1,0 +1,28 @@
+[23 Jun, 2024 - 10:02:14:214] [35mhttp[39m: [35m::1 POST /api/v1/users/register 409 - 440.348 ms[39m
+[23 Jun, 2024 - 10:10:01:101] [35mhttp[39m: [35m::1 POST /api/v1/users/register 409 - 438.470 ms[39m
+[23 Jun, 2024 - 10:12:57:1257] [35mhttp[39m: [35m::1 POST /api/v1/users/register 409 - 270.978 ms[39m
+[23 Jun, 2024 - 10:13:57:1357] [35mhttp[39m: [35m::1 POST /api/v1/users/register 409 - 245.847 ms[39m
+[23 Jun, 2024 - 10:20:52:2052] [31merror[39m: [31mUser with email or username already exists[39m
+[23 Jun, 2024 - 10:20:52:2052] [35mhttp[39m: [35m::1 POST /api/v1/users/register 409 - 281.582 ms[39m
+[23 Jun, 2024 - 10:21:35:2135] [31merror[39m: [31mUser with email or username already exists[39m
+[23 Jun, 2024 - 10:21:35:2135] [35mhttp[39m: [35m::1 POST /api/v1/users/register 409 - 378.172 ms[39m
+[23 Jun, 2024 - 10:35:35:3535] [35mhttp[39m: [35m::1 POST /api/v1/users/register 201 - 5779.476 ms[39m
+[23 Jun, 2024 - 10:36:09:369] [31merror[39m: [31mcrypto.createHash is not a function[39m
+[23 Jun, 2024 - 10:36:09:369] [35mhttp[39m: [35m::1 GET /api/v1/users/verify-email/75aa68582d56e73889ed0ebfbf079b508216aa3d 500 - 4.675 ms[39m
+[23 Jun, 2024 - 10:36:10:3610] [35mhttp[39m: [35m::1 GET /favicon.ico 404 - 1.699 ms[39m
+[23 Jun, 2024 - 10:39:35:3935] [35mhttp[39m: [35m::1 GET /api/v1/users/verify-email/75aa68582d56e73889ed0ebfbf079b508216aa3d 200 - 723.611 ms[39m
+[23 Jun, 2024 - 10:51:05:515] [31merror[39m: [31mSomething went wrong while generating referesh and access token[39m
+[23 Jun, 2024 - 10:51:05:515] [35mhttp[39m: [35m::1 POST /api/v1/users/login 500 - 515.352 ms[39m
+[23 Jun, 2024 - 10:52:57:5257] [31merror[39m: [31mSomething went wrong while generating referesh and access token[39m
+[23 Jun, 2024 - 10:52:57:5257] [35mhttp[39m: [35m::1 POST /api/v1/users/login 500 - 653.214 ms[39m
+[23 Jun, 2024 - 10:55:14:5514] [35mhttp[39m: [35m::1 POST /api/v1/users/login 200 - 1093.015 ms[39m
+[23 Jun, 2024 - 10:56:20:5620] [35mhttp[39m: [35m::1 POST /api/v1/users/logout 200 - 546.538 ms[39m
+[23 Jun, 2024 - 10:57:04:574] [35mhttp[39m: [35m::1 POST /api/v1/users/login 200 - 1233.064 ms[39m
+[23 Jun, 2024 - 10:58:13:5813] [35mhttp[39m: [35m::1 POST /api/v1/users/logout 200 - 822.962 ms[39m
+[23 Jun, 2024 - 10:58:15:5815] [31merror[39m: [31mUnauthorized request[39m
+[23 Jun, 2024 - 10:58:15:5815] [35mhttp[39m: [35m::1 POST /api/v1/users/logout 401 - 3.667 ms[39m
+[23 Jun, 2024 - 10:58:46:5846] [35mhttp[39m: [35m::1 POST /api/v1/users/login 200 - 1395.299 ms[39m
+[23 Jun, 2024 - 11:00:17:017] [35mhttp[39m: [35m::1 POST /api/v1/users/logout 200 - 512.685 ms[39m
+[23 Jun, 2024 - 11:34:44:3444] [35mhttp[39m: [35m::1 POST /api/v1/users/login 200 - 1527.111 ms[39m
+[23 Jun, 2024 - 11:36:03:363] [35mhttp[39m: [35m::1 POST /api/v1/users/forgot-password 200 - 5840.681 ms[39m
+[23 Jun, 2024 - 11:36:17:3617] [35mhttp[39m: [35m::1 GET /api/v1/users/reset-password/f097df365799934827434d441facf6eb9d737755 404 - 2.849 ms[39m

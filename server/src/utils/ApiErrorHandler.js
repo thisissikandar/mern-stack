@@ -7,9 +7,9 @@
 class ApiErrorHandler extends Error {
   constructor(
     statusCode,
-    message = "Something Went wrong",
+    message = "Something went wrong",
     errors = [],
-    stack = ''
+    stack = ""
   ) {
     super(message);
     this.statusCode = statusCode;
